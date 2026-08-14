@@ -1,0 +1,18 @@
+# docker-compose.dokploy.yml — Dokploy via Git-Provider (Dokploy baut das Image selbst)
+# In Dokploy: Compose Path auf ./docker-compose.dokploy.yml setzen.
+# Env-Variablen (LLM_API_KEY etc.) in der Dokploy-UI unter "Environment" setzen.
+
+services:
+  prozesswerk:
+    build: .
+    restart: unless-stopped
+    environment:
+      - LLM_API_KEY=${LLM_API_KEY}
+      - LLM_BASE_URL=${LLM_BASE_URL:-https://api.openai.com/v1}
+      - LLM_MODEL=${LLM_MODEL:-gpt-4o}
+    networks:
+      - dokploy-network
+
+networks:
+  dokploy-network:
+    external: true
