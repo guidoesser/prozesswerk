@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="boltGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#312e81"/>
+      <stop offset="45%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#a5b4fc"/>
+    </linearGradient>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="2.5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect width="64" height="64" rx="12" fill="#0f0f13"/>
+
+  <!-- Soft glow behind diamond -->
+  <polygon points="32,7 57,32 32,57 7,32"
+           fill="#6366f1" opacity="0.12"
+           filter="url(#glow)"/>
+
+  <!-- Diamond frame -->
+  <polygon points="32,7 57,32 32,57 7,32"
+           fill="rgba(99,102,241,0.06)"
+           stroke="url(#boltGrad)" stroke-width="4.5"
+           stroke-linejoin="round"/>
+
+  <!-- Lightning bolt -->
+  <path d="M 7,53 L 19,43 L 25,35 L 22,27 L 31,21 L 27,13 L 37,9 L 53,4"
+        fill="none" stroke="url(#boltGrad)" stroke-width="3.5"
+        stroke-linejoin="round" stroke-linecap="round"/>
+</svg>

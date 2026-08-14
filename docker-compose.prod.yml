@@ -1,0 +1,19 @@
+# docker-compose.prod.yml — Production-Deploy via Dokploy
+# Nutzt das vorgebaute Image aus GitHub Container Registry (kein lokaler Build)
+
+services:
+  prozesswerk:
+    image: ghcr.io/guidoesser/prozesswerk:latest
+    restart: unless-stopped
+    ports:
+      - "8000"
+    environment:
+      - LLM_API_KEY=${LLM_API_KEY}
+      - LLM_BASE_URL=${LLM_BASE_URL:-https://api.openai.com/v1}
+      - LLM_MODEL=${LLM_MODEL:-gpt-4o}
+    networks:
+      - dokploy-network
+
+networks:
+  dokploy-network:
+    external: true

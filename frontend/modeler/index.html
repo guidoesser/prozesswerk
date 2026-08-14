@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BPMN Editor - Professional (Lokal)</title>
+
+  <!-- Lokale Stylesheets -->
+  <link rel="stylesheet" href="diagram-js.css" />
+  <link rel="stylesheet" href="bpmn-font/css/bpmn.css" />
+
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    }
+
+    .toolbar {
+      height: 60px;
+      background: #f8f9fa;
+      padding: 0 20px;
+      border-bottom: 1px solid #ccc;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      box-sizing: border-box;
+    }
+
+    .divider {
+      width: 1px;
+      height: 30px;
+      background: #ccc;
+      margin: 0 10px;
+    }
+
+    #canvas {
+      width: 100%;
+      height: calc(100vh - 60px);
+      background-color: #ffffff;
+    }
+
+    button {
+      padding: 8px 16px;
+      cursor: pointer;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 14px;
+      transition: background 0.2s;
+    }
+
+    button:hover { background: #0056b3; }
+    .btn-new { background: #28a745; }
+    .btn-new:hover { background: #218838; }
+    .btn-secondary { background: #6c757d; }
+    .btn-secondary:hover { background: #5a6268; }
+
+    .license-footer {
+      position: fixed;
+      bottom: 10px;
+      right: 110px;
+      font-size: 12px;
+      color: #555;
+      z-index: 100;
+      background: rgba(255, 255, 255, 0.7);
+      padding: 2px 5px;
+      border-radius: 3px;
+    }
+
+    .license-footer a {
+      color: #007bff;
+      text-decoration: none;
+    }
+
+    .license-footer a:hover {
+      text-decoration: underline;
+    }
+
+    .bjs-powered-by {
+      bottom: 10px !important;
+      right: 10px !important;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="toolbar">
+    <button id="new-diagram" class="btn-new">Neues Diagramm</button>
+    <input type="file" id="file-input" style="display: none;" accept=".bpmn, .xml">
+    <button onclick="document.getElementById('file-input').click()">Datei öffnen</button>
+    <div class="divider"></div>
+    <button id="download-xml" class="btn-secondary">Als BPMN speichern</button>
+    <button id="download-svg" class="btn-secondary">Als Bild (SVG) speichern</button>
+  </div>
+
+  <div id="canvas"></div>
+
+  <div class="license-footer">
+    <a href="https://bpmn.io/license/" target="_blank" rel="noopener">bpmn-js license</a>
+  </div>
+
+  <!-- Lokales JavaScript -->
+  <script src="bpmn-modeler.development.js"></script>
+
+  <script>
+    var bpmnModeler = new BpmnJS({
+      container: '#canvas',
+      keyboard: { bindTo: window }
+    });
+
+    const initialXml = `<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:process id="Process_1" isExecutable="false">
+    <bpmn:startEvent id="StartEvent_1" name="Start" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_1">
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+        <dc:Bounds x="173" y="102" width="36" height="36" />
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>`;
+
+    async function openDiagram(xml) {
+      try {
+        await bpmnModeler.importXML(xml);
+        bpmnModeler.get('canvas').zoom('fit-viewport');
+      } catch (err) {
+        alert('Fehler beim Laden des Diagramms: ' + err.message);
+        console.error(err);
+      }
+    }
+
+    document.getElementById('new-diagram').addEventListener('click', () => {
+      if (confirm('Möchten Sie ein neues Diagramm erstellen? Alle ungespeicherten Änderungen gehen verloren.')) {
+        openDiagram(initialXml);
+      }
+    });
+
+    document.getElementById('file-input').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (event) => openDiagram(event.target.result);
+      reader.readAsText(file);
+      this.value = null;
+    });
+
+    document.getElementById('download-xml').addEventListener('click', async () => {
+      try {
+        const { xml } = await bpmnModeler.saveXML({ format: true });
+        downloadFile('prozess.bpmn', xml);
+      } catch (err) {
+        console.error('Fehler beim Exportieren des XML:', err);
+      }
+    });
+
+    document.getElementById('download-svg').addEventListener('click', async () => {
+      try {
+        const { svg } = await bpmnModeler.saveSVG();
+        downloadFile('prozess.svg', svg);
+      } catch (err) {
+        console.error('Fehler beim Exportieren des SVG:', err);
+      }
+    });
+
+    function downloadFile(name, content) {
+      const element = document.createElement('a');
+      element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(content));
+      element.setAttribute('download', name);
+      element.style.display = 'none';
+      document.body.appendChild(element);
+      element.click();
+      document.body.removeChild(element);
+    }
+
+    openDiagram(initialXml);
+
+    window.addEventListener('resize', () => {
+        try {
+          bpmnModeler.get('canvas').zoom('fit-viewport');
+        } catch(e) {}
+    });
+  </script>
+</body>
+</html>

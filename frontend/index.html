@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<!-- Copyright (c) 2026 Guido Esser
+     Licensed under the Elastic License 2.0. Community Edition.
+     Self-hosting free. SaaS/Managed Service requires commercial license. -->
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Prozesswerk</title>
+  <meta name="description" content="Text → BPMN 2.0 Diagramm — KI-gestützte Prozessmodellierung" />
+
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="180x180" href="/favicon-180.png" />
+  <script src="app.js" defer></script>
+</head>
+<body>
+
+  <div class="app-container">
+
+    <!-- ======== Header ======== -->
+    <header class="app-header">
+      <h1><img src="/favicon-32.png" alt="" class="header-logo" width="32" height="32"> <span class="header-title">Prozesswerk</span></h1>
+      <p class="subtitle">Text → BPMN 2.0 Diagramm</p>
+
+      <div class="header-links">
+        <a href="/interview.html" class="header-link">🎤 Prozess-Interview</a>
+        <span class="config-example" id="config-example" style="display:none;">
+          <select id="example-select" title="Best-Practice-Beispiel laden">
+            <option value="" disabled selected>📋 Beispiele</option>
+            <option value="versicherung">Schadensfall Versicherung</option>
+            <option value="urlaub">Urlaubsantrag</option>
+            <option value="bestellung">Bestellprozess</option>
+            <option value="rechnung">Rechnungseingang</option>
+            <option value="onboarding">Mitarbeiter-Onboarding</option>
+          </select>
+        </span>
+      </div>
+
+      <div class="config-status" id="config-status">
+        <span class="status-dot" id="config-dot"></span>
+        <span class="status-label" id="config-label">Prüfe Konfiguration…</span>
+        <span class="config-info" id="config-info"></span>
+
+      </div>
+    </header>
+
+    <!-- ======== Error Display ======== -->
+    <div class="error-display" id="error-display">
+      <span class="error-icon">⚠️</span>
+      <span id="error-message"></span>
+      <button class="error-close" id="error-close" aria-label="Schließen">&times;</button>
+    </div>
+
+    <!-- ======== Guide (collapsible) ======== -->
+    <details class="card guide-section" id="guide-section">
+      <summary>Anleitung: Prozesse richtig formulieren</summary>
+      <div class="guide-content">
+        <p>Damit die KI ein präzises BPMN-Diagramm erzeugen kann, solltest du folgende Punkte in deiner Beschreibung erwähnen:</p>
+        <ul>
+          <li><strong>Wer?</strong> — Nenne die beteiligten <em>Rollen</em> („Sachbearbeiter", „Kunde", „System")</li>
+          <li><strong>Was löst den Prozess aus?</strong> — „Kunde stellt Antrag", „Rechnung geht ein"</li>
+          <li><strong>Welche Schritte?</strong> — Jeden Schritt einzeln nennen („prüft", „erfasst", „genehmigt")</li>
+          <li><strong>Wo wird entschieden?</strong> — Gateways explizit machen: „Wenn X, dann Y. Sonst Z."</li>
+          <li><strong>Ausnahmen?</strong> — Fehlerpfade, Eskalationen, Abbruch („Bei Unvollständigkeit zurück")</li>
+          <li><strong>Endzustand?</strong> — Wann ist der Prozess abgeschlossen?</li>
+        </ul>
+        <p class="guide-hint">💡 <strong>Tipp:</strong> Je mehr Rollen und Entscheidungspunkte du nennst, desto detaillierter das Diagramm. Verwende das Dropdown für Best-Practice-Beispiele.</p>
+      </div>
+    </details>
+
+    <!-- ======== Input Section ======== -->
+    <section class="card input-section">
+      <div class="input-row">
+        <div class="input-wrapper">
+          <textarea
+            id="process-input"
+            placeholder="Beschreibe deinen Geschäftsprozess…"
+            rows="4"
+            aria-label="Prozessbeschreibung"
+          ></textarea>
+          <button
+            class="mic-btn"
+            id="mic-btn"
+            title="Spracheingabe"
+            aria-label="Spracheingabe starten/stoppen"
+          >🎤</button>
+        </div>
+        <button class="btn-primary" id="generate-btn">
+          <span class="spinner"></span>
+          <span class="btn-text">Generieren</span>
+        </button>
+      </div>
+      <p style="margin-top: 10px; font-size: 0.78rem; color: var(--text-muted);">
+        Drücke <kbd style="background:var(--bg-elevated);padding:1px 6px;border-radius:3px;border:1px solid var(--border)">Ctrl+Enter</kbd> zum Absenden
+      </p>
+    </section>
+
+    <!-- ======== Results Section ======== -->
+    <section class="results-section" id="results-section" style="display:none;">
+
+      <div class="card" style="padding-bottom: 0;">
+        <div class="tab-panel">
+          <div class="tab-bar">
+            <button class="tab-btn active" id="tab-xml">BPMN XML</button>
+            <button class="tab-btn" id="tab-notes">Notizen</button>
+            <button class="tab-btn" id="tab-structure">Prozessstruktur</button>
+          </div>
+          <div class="tab-content active" id="tab-content-xml">
+            <pre id="xml-content"></pre>
+            <div class="tab-actions">
+              <button class="btn-sm" id="copy-xml-btn">📋 Kopieren</button>
+            </div>
+          </div>
+          <div class="tab-content" id="tab-content-notes">
+            <div class="notes-content" id="notes-content">
+              <em>Keine Notizen verfügbar.</em>
+            </div>
+          </div>
+          <div class="tab-content" id="tab-content-structure">
+            <div class="structure-content" id="structure-content"></div>
+          </div>
+        </div>
+        <div class="download-section">
+          <button class="btn-download" id="download-btn">⬇️ BPMN herunterladen</button>
+          <button class="btn-editor" id="editor-btn">✏️ In Editor öffnen</button>
+        </div>
+      </div>
+
+      <div class="card iteration-section" id="iteration-section" style="display:none;">
+        <div class="iteration-row">
+          <div class="iteration-input-wrapper">
+            <input type="text" id="iteration-input" placeholder="Verbesserungswunsch…" aria-label="Prozess verfeinern" />
+          </div>
+          <button class="btn-primary" id="iteration-btn" style="min-height:44px;padding:10px 22px;">
+            <span class="spinner"></span>
+            <span class="btn-text">Verfeinern</span>
+          </button>
+        </div>
+        <p style="margin-top: 8px; font-size: 0.78rem; color: var(--text-muted);">
+          Verfeinere den generierten Prozess mit zusätzlichen Anweisungen
+        </p>
+      </div>
+
+    </section>
+
+  </div>
+
+</body>
+</html>

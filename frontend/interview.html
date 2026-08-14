@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<!-- Copyright (c) 2026 Guido Esser
+     Licensed under the Elastic License 2.0. Community Edition. -->
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prozess-Interview</title>
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="180x180" href="/favicon-180.png" />
+  <style>
+    :root {
+      --bg: #0f0f13;
+      --bg-card: #1a1a22;
+      --bg-input: #12121a;
+      --accent: #6366f1;
+      --accent-hover: #818cf8;
+      --text: #e4e4e7;
+      --text-muted: #71717a;
+      --border: #27272d;
+      --radius: 10px;
+      --success: #22c55e;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 40px;
+      max-width: 640px;
+      width: 100%;
+    }
+    .progress {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 32px;
+    }
+    .progress-dot {
+      width: 100%;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      transition: background 0.3s;
+    }
+    .progress-dot.done { background: var(--accent); }
+    .progress-dot.active { background: var(--accent-hover); }
+
+    h2 {
+      font-size: 1.4rem;
+      margin-bottom: 8px;
+    }
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-bottom: 24px;
+    }
+
+    .question {
+      font-size: 1.1rem;
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+    textarea, input[type="text"] {
+      width: 100%;
+      padding: 14px 16px;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 1rem;
+      font-family: inherit;
+      resize: vertical;
+      transition: border-color 0.2s;
+    }
+    textarea:focus, input[type="text"]:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    textarea { min-height: 100px; }
+
+    .hint {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-top: 8px;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 12px 0;
+    }
+    .chip {
+      padding: 8px 16px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+      background: var(--bg-input);
+    }
+    .chip:hover { border-color: var(--accent); }
+    .chip.selected {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+    }
+    button {
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-family: inherit;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-secondary {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+    .btn-secondary:hover { border-color: var(--accent); color: var(--text); }
+    .btn-success {
+      background: var(--success);
+      color: #fff;
+      font-size: 1.05rem;
+      padding: 14px 28px;
+    }
+
+    .summary {
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      white-space: pre-wrap;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      max-height: 200px;
+      overflow-y: auto;
+      margin-bottom: 16px;
+    }
+
+    .step { display: none; }
+    .step.active { display: block; }
+
+    .back-link {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+    .back-link:hover { color: var(--text); }
+
+    .preview-label {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+  </style>
+</head>
+<body>
+  <a href="/" class="back-link">← Generator</a>
+
+  <div class="card">
+    <div class="progress" id="progress"></div>
+
+    <!-- Step 1: Trigger -->
+    <div class="step active" data-step="0">
+      <h2>Prozess-Interview</h2>
+      <p class="subtitle">Schritt 1 von 6 — Auslöser</p>
+      <p class="question">Was löst den Prozess aus? Wer startet ihn?</p>
+      <textarea id="a1" placeholder="z.B. Ein Kunde meldet einen Schadensfall per Telefon..."></textarea>
+      <p class="hint">Nenne den Auslöser und die auslösende Person/Rolle.</p>
+    </div>
+
+    <!-- Step 2: Roles -->
+    <div class="step" data-step="1">
+      <h2>Beteiligte</h2>
+      <p class="subtitle">Schritt 2 von 6 — Wer macht was?</p>
+      <p class="question">Welche Rollen/Personen sind beteiligt?</p>
+      <div class="chips" id="role-chips">
+        <span class="chip" data-role="Kunde">Kunde</span>
+        <span class="chip" data-role="Sachbearbeiter">Sachbearbeiter</span>
+        <span class="chip" data-role="Vorgesetzter">Vorgesetzter</span>
+        <span class="chip" data-role="System">System / IT</span>
+        <span class="chip" data-role="Gutachter">Gutachter</span>
+        <span class="chip" data-role="Buchhaltung">Buchhaltung</span>
+        <span class="chip" data-role="Personalabteilung">Personalabteilung</span>
+        <span class="chip" data-role="Versand">Versand / Logistik</span>
+      </div>
+      <input type="text" id="a2" placeholder="Oder eigene Rolle eintippen..." style="margin-top:8px;">
+    </div>
+
+    <!-- Step 3: Steps -->
+    <div class="step" data-step="2">
+      <h2>Ablauf</h2>
+      <p class="subtitle">Schritt 3 von 6 — Die einzelnen Schritte</p>
+      <p class="question">Beschreibe den Ablauf Schritt für Schritt. Wer macht was in welcher Reihenfolge?</p>
+      <textarea id="a3" rows="5" placeholder="z.B. Der Sachbearbeiter prüft die Police. Dann erstellt er eine erste Einschätzung..."></textarea>
+    </div>
+
+    <!-- Step 4: Decisions -->
+    <div class="step" data-step="3">
+      <h2>Entscheidungen</h2>
+      <p class="subtitle">Schritt 4 von 6 — Wenn-dann-Verzweigungen</p>
+      <p class="question">Gibt es Entscheidungspunkte? Was passiert bei "Ja" und bei "Nein"?</p>
+      <textarea id="a4" rows="4" placeholder="z.B. Ist der Schaden über 1000€? Wenn ja: Gutachter einschalten. Wenn nein: direkt auszahlen."></textarea>
+    </div>
+
+    <!-- Step 5: Exceptions -->
+    <div class="step" data-step="4">
+      <h2>Ausnahmen & Sonderfälle</h2>
+      <p class="subtitle">Schritt 5 von 6 — Was kann schiefgehen?</p>
+      <p class="question">Gibt es Fehlerfälle, Eskalationen oder Abbruchbedingungen?</p>
+      <textarea id="a4b" rows="3" placeholder="z.B. Bei unvollständigen Unterlagen geht der Antrag zurück. Wenn der Kunde nicht erreichbar ist, wird der Vorgang geschlossen."></textarea>
+    </div>
+
+    <!-- Step 6: End -->
+    <div class="step" data-step="5">
+      <h2>Abschluss</h2>
+      <p class="subtitle">Schritt 6 von 6 — Ende des Prozesses</p>
+      <p class="question">Wann und wie endet der Prozess? Was ist das Ergebnis?</p>
+      <textarea id="a5" rows="2" placeholder="z.B. Der Kunde erhält die Auszahlung. Der Vorgang wird archiviert."></textarea>
+    </div>
+
+    <!-- Step 7: Review -->
+    <div class="step" data-step="6">
+      <h2>Fertig!</h2>
+      <p class="subtitle">Prozessbeschreibung</p>
+      <p class="preview-label">Vorschau</p>
+      <div class="summary" id="summary"></div>
+      <div class="btn-row">
+        <button class="btn-secondary" onclick="goToStep(0)">↩ Nochmal</button>
+        <button class="btn-success" onclick="openInGenerator()">✏️ Im Generator öffnen</button>
+      </div>
+    </div>
+
+    <div class="btn-row" id="nav-buttons">
+      <button class="btn-secondary" id="btn-back" onclick="prevStep()">← Zurück</button>
+      <button class="btn-primary" id="btn-next" onclick="nextStep()">Weiter →</button>
+    </div>
+  </div>
+
+  <script>
+    const totalSteps = 6; // 0-5 = questions, 6 = review
+    let currentStep = 0;
+    const selectedRoles = new Set();
+
+    function renderProgress() {
+      const bar = document.getElementById('progress');
+      bar.innerHTML = '';
+      for (let i = 0; i <= totalSteps; i++) {
+        const dot = document.createElement('div');
+        dot.className = 'progress-dot';
+        if (i < currentStep) dot.classList.add('done');
+        if (i === currentStep && i < totalSteps) dot.classList.add('active');
+        bar.appendChild(dot);
+      }
+    }
+
+    function goToStep(n) {
+      document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+      document.querySelector(`[data-step="${n}"]`).classList.add('active');
+      currentStep = n;
+      renderProgress();
+      updateNav();
+    }
+
+    function nextStep() {
+      if (currentStep < totalSteps) {
+        if (currentStep === totalSteps - 1) buildSummary();
+        goToStep(currentStep + 1);
+      }
+    }
+
+    function prevStep() {
+      if (currentStep > 0) goToStep(currentStep - 1);
+    }
+
+    function updateNav() {
+      const nav = document.getElementById('nav-buttons');
+      const btnBack = document.getElementById('btn-back');
+      const btnNext = document.getElementById('btn-next');
+
+      if (currentStep >= totalSteps) {
+        nav.style.display = 'none';
+      } else {
+        nav.style.display = 'flex';
+        btnBack.style.display = currentStep === 0 ? 'none' : '';
+        btnNext.textContent = currentStep === totalSteps - 1 ? 'Fertig →' : 'Weiter →';
+      }
+    }
+
+    function buildSummary() {
+      const a1 = document.getElementById('a1').value.trim();
+      const roles = [...selectedRoles];
+      const customRole = document.getElementById('a2').value.trim();
+      if (customRole && !roles.includes(customRole)) roles.push(customRole);
+      const a3 = document.getElementById('a3').value.trim();
+      const a4 = document.getElementById('a4').value.trim();
+      const a4b = document.getElementById('a4b').value.trim();
+      const a5 = document.getElementById('a5').value.trim();
+
+      let parts = [];
+      if (a1) parts.push(a1);
+      if (roles.length) parts.push(`Beteiligte Rollen: ${roles.join(', ')}.`);
+      if (a3) parts.push(a3);
+      if (a4) parts.push(a4);
+      if (a4b) parts.push(a4b);
+      if (a5) parts.push(a5);
+
+      document.getElementById('summary').textContent = parts.join('\n\n');
+    }
+
+    function openInGenerator() {
+      const text = document.getElementById('summary').textContent;
+      localStorage.setItem('bpmn-interview-text', text);
+      window.location.href = '/';
+    }
+
+    // Role chips
+    document.getElementById('role-chips').addEventListener('click', (e) => {
+      if (e.target.classList.contains('chip')) {
+        const role = e.target.dataset.role;
+        if (selectedRoles.has(role)) {
+          selectedRoles.delete(role);
+          e.target.classList.remove('selected');
+        } else {
+          selectedRoles.add(role);
+          e.target.classList.add('selected');
+        }
+      }
+    });
+
+    // Enter key advances
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey && currentStep < totalSteps) {
+        const active = document.querySelector('.step.active');
+        const ta = active?.querySelector('textarea');
+        if (ta && document.activeElement === ta) return; // allow Enter in textarea
+        e.preventDefault();
+        nextStep();
+      }
+    });
+
+    renderProgress();
+    updateNav();
+  </script>
+</body>
+</html>

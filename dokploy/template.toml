@@ -1,0 +1,16 @@
+# template.toml — Dokploy Open Source Template
+# Import: Dokploy → Compose → Advanced → Base64 import
+
+[variables]
+main_domain = "${domain}"
+llm_api_key   = "${password}"
+
+[[config.domains]]
+serviceName = "prozesswerk"
+port        = 8000
+host        = "${main_domain}"
+
+[config.env]
+LLM_API_KEY  = "${llm_api_key}"
+LLM_BASE_URL = "https://api.openai.com/v1"
+LLM_MODEL    = "gpt-4o"

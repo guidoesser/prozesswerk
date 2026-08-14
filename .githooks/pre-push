@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# Pre-push hook: Verhindert direkte Pushes auf production ohne release.sh
+#
+# Installation (einmalig pro Clone):
+#   git config core.hooksPath .githooks
+
+PRODUCTION_BRANCH="production"
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+    branch=$(echo "$remote_ref" | sed 's|refs/heads/||')
+
+    if [ "$branch" = "$PRODUCTION_BRANCH" ]; then
+        echo ""
+        echo "╔══════════════════════════════════════════════════════════╗"
+        echo "║  ❌  DIREKTER PUSH AUF PRODUCTION IST GESPERRT         ║"
+        echo "╠══════════════════════════════════════════════════════════╣"
+        echo "║  Nutze:  ./release.sh <version>                        ║"
+        echo "║  Das Script merged main → production + tagged +          ║"
+        echo "║  baut Docker-Image — NUR nach bestandenen Tests.        ║"
+        echo "╚══════════════════════════════════════════════════════════╝"
+        echo ""
+        exit 1
+    fi
+done
+
+exit 0
