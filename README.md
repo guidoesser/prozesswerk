@@ -156,36 +156,6 @@ cd backend && npm install && cd ..
 python -m pytest tests/ -v
 ```
 
-## Release-Workflow
-
-Releases erfolgen **ausschließlich** über den `production`-Branch — nach bestandenen lokalen Tests.
-
-**Ablauf:**
-
-```bash
-# 1. Entwicklung auf main (normaler Workflow)
-git checkout main
-# ... Änderungen committen ...
-
-# 2. Release durchführen (nur wenn Tests grün sind!)
-./release.sh 1.2.0
-```
-
-Was `release.sh` macht:
-1. Prüft, dass du auf `main` bist
-2. Führt `pytest tests/` aus (**Test-Gate**)
-3. Merged `main` → `production`
-4. Erstellt einen Git-Tag `v1.2.0`
-5. Baut das Docker-Image `ghcr.io/guidoesser/prozesswerk:1.2.0`
-6. Pusht Branch, Tag und Image
-
-**Direkter Push auf `production` ist gesperrt** (Pre-Push-Hook). Der einzige Weg auf `production` ist `./release.sh`.
-
-**Hooks aktivieren** (einmalig nach Clone):
-```bash
-git config core.hooksPath .githooks
-```
-
 ## Lizenz
 
 **Elastic License 2.0 (ELv2)** — Community Edition
