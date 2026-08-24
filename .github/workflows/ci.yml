@@ -32,7 +32,6 @@ jobs:
       - name: Run tests
         run: python -m pytest tests/ -v
 
-  # ─── Docker Build & Push (nur auf production + Tags) ─────────────
   docker:
     needs: test
     if: github.ref == 'refs/heads/production' || startsWith(github.ref, 'refs/tags/v')
