@@ -1,6 +1,5 @@
 /* Copyright (c) 2026 Guido Esser
- * Licensed under the Elastic License 2.0 — see LICENSE file for details.
- * Community Edition — self-hosting free. SaaS/Managed Service requires commercial license. */
+ * Licensed under the MIT License — see LICENSE file for details. */
 /* ============================================================
    Prozesswerk — App Logic
    ============================================================ */

@@ -158,13 +158,10 @@ python -m pytest tests/ -v
 
 ## Lizenz
 
-**Elastic License 2.0 (ELv2)** — Community Edition
+**MIT License** — Copyright (c) 2026 Guido Esser
 
 - ✅ **Self-hosting** für eigene Zwecke: kostenlos und unbegrenzt
 - ✅ **Modifizieren und forken** erlaubt
-- ❌ **SaaS / Managed Service** für Dritte anbieten: nicht erlaubt
-- ❌ **Konkurrenzprodukt** bauen und verkaufen: nicht erlaubt
-
-Für kommerzielle SaaS-Lizenzen und Premium-Features: Kontakt aufnehmen.
+- ✅ **Kommerzielle Nutzung und SaaS** erlaubt — unter Beibehaltung des Copyright-/Lizenzhinweises
 
 Siehe [LICENSE](./LICENSE) für den vollständigen Text.
