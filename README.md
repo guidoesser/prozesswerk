@@ -121,7 +121,7 @@ docker compose up -d
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -r backend/requirements.txt
+pip install -r backend/requirements-dev.txt
 
 # Node.js für ELK.js-Layout (einmalig)
 cd backend && npm install && cd ..
@@ -146,6 +146,9 @@ uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000
 ## Tests
 
 ```bash
+# Einmalig: Test-Abhängigkeiten installieren
+pip install -r backend/requirements-dev.txt
+
 # Einmalig: ELK.js installieren (falls nicht schon geschehen)
 cd backend && npm install && cd ..
 

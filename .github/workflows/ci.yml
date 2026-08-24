@@ -23,7 +23,7 @@ jobs:
           node-version: '22'
 
       - name: Install Python dependencies
-        run: pip install -r backend/requirements.txt
+        run: pip install -r backend/requirements-dev.txt
 
       - name: Install Node dependencies (ELK.js)
         working-directory: backend
