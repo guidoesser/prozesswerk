@@ -158,7 +158,7 @@ python -m pytest tests/ -v
 
 ## Lizenz
 
-**MIT License** — Copyright (c) 2026 Guido Esser
+**MIT License** — Copyright (c) 2026 Guido Trollmann-Eßer
 
 - ✅ **Self-hosting** für eigene Zwecke: kostenlos und unbegrenzt
 - ✅ **Modifizieren und forken** erlaubt
