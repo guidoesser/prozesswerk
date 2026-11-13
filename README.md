@@ -3,6 +3,7 @@
 ## Unterstützung bei der Projekteiterentwicklung gesucht! 
 prozesswerk at mailbox dot org
 
+
 **Textbasierte Geschäftsprozess-Modellierung – natürlichsprachlich → BPMN 2.0 Diagramm**
 
 Gib einen Prozess in natürlicher Sprache ein (per Text oder Sprache), und die App erzeugt daraus ein vollständiges BPMN 2.0 Diagramm als importierbares BPMN-XML mit automatischem Layout. Das Ergebnis kann direkt im integrierten bpmn-js Editor visualisiert und nachbearbeitet werden.
