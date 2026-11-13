@@ -10,6 +10,10 @@ Gib einen Prozess in natürlicher Sprache ein (per Text oder Sprache), und die A
 
 🛡️ **Selfhosted = maximaler Datenschutz** — deine Prozessbeschreibungen verlassen deinen Server nie. 🔌 **Beliebige KI einbindbar** — OpenAI, DeepSeek, Anthropic, Ollama, lokale LLMs: jeder OpenAI-kompatible API-Endpunkt funktioniert.
 
+<img width="1090" height="969" alt="prozesswerk1" src="https://github.com/user-attachments/assets/e9b3ba8a-bcbd-4361-ae90-d424aba76548" />
+<img width="1030" height="996" alt="prozesswerk2" src="https://github.com/user-attachments/assets/a4425389-2353-475e-816d-8ca2b5433c35" />
+<img width="1380" height="820" alt="prozesswerk3" src="https://github.com/user-attachments/assets/631124ee-91eb-4e70-bd75-e69004debf10" />
+
 ---
 
 ## Features
