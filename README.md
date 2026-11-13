@@ -1,8 +1,7 @@
 # Prozesswerk
 
-## Unterstützung bei der Projekteiterentwicklung gesucht! 
-prozesswerk at mailbox dot org
-
+## Unterstützung bei der Projektweiterentwicklung gesucht! 
+Kontakt: prozesswerk at mailbox dot org
 
 **Textbasierte Geschäftsprozess-Modellierung – natürlichsprachlich → BPMN 2.0 Diagramm**
 
