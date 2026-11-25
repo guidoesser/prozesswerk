@@ -51,7 +51,11 @@ REGELN (Camunda Modeling Styles — https://camunda.com/bpmn/examples/):
   sollten \u00e4hnlich viele Schritte haben (kein "Ja=1 Schritt, Nein=15 Schritte")
 - KEINE KREUZENDEN FLOWS: Elemente-Reihenfolge so w\u00e4hlen, dass Flows
   sich m\u00f6glichst nicht kreuzen. Oberer Pfad = obere Lane, usw.
-- type: start | end | task | gateway
+- type: start | end | task | gateway | callActivity
+- callActivity NUR verwenden, wenn ein Schritt einen ANDEREN, eigenstaendigen
+  (Teil-)Prozess aufruft, der als separates Diagramm existiert
+  (z. B. "ruft den Prozess Bonitaetspruefung auf"). Dann ZUSAETZLICH in den Step:
+  "calledProcess": "<Name des aufgerufenen Prozesses>" (Substantiv, ohne "Prozess").
 - flow-Array: [Von-Label, Nach-Label, optional Bedingung]
 - Ausnahmen: eigener Pfad zu end-Label
 - Rollen-Reihenfolge = Lane-Reihenfolge (oben \u2192 unten)

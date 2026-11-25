@@ -25,6 +25,8 @@ Gib einen Prozess in natürlicher Sprache ein (per Text oder Sprache), und die A
 - 📄 **BPMN 2.0 XML** – Vollständig mit DI-Layout (ELK.js Sugiyama + Spine-Gap-Routing) – importierbar in Camunda, bpmn.io, Signavio uvm.
 - ✏️ **bpmn-js Editor** – Generiertes BPMN visuell im Browser öffnen und nachbearbeiten
 - 🔄 **Iterativ** – Verfeinere das Diagramm durch weitere Angaben (Prozesskontext wird mitgeschickt)
+- 🔗 **Aufruf-Aktivitäten (Call Activities)** – Schritte, die einen anderen Prozess aufrufen („ruft den Prozess Bonitätsprüfung auf"), werden als BPMN Call Activity mit `calledElement` erzeugt
+- 📚 **Diagramm-Bibliothek** – Diagramme speichern, öffnen und löschen; Call Activities per Dropdown mit anderen Diagrammen verknüpfen (SQLite-Persistenz)
 - 📋 **Beispiele** – 5 Best-Practice-Vorlagen (Dropdown)
 - 🐳 **Docker** – Einfach starten mit `docker compose up`
 
@@ -97,6 +99,12 @@ docker compose up -d
 | `GET` | `/api/health` | Health-Check |
 | `GET` | `/api/config` | LLM-Konfigurationsstatus |
 | `POST` | `/api/generate` | Text → BPMN generieren |
+| `POST` | `/api/render` | BPMN-XML aus Prozess-Definition re-rendern (ohne LLM) |
+| `GET` | `/api/diagrams` | Gespeicherte Diagramme auflisten |
+| `POST` | `/api/diagrams` | Diagramm speichern (vergibt eindeutige Prozess-ID) |
+| `GET` | `/api/diagrams/{id}` | Diagramm laden |
+| `PUT` | `/api/diagrams/{id}` | Diagramm umbenennen |
+| `DELETE` | `/api/diagrams/{id}` | Diagramm löschen |
 
 ### POST /api/generate
 

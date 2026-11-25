@@ -8,6 +8,14 @@ Unterstützt ID-Preservation bei Iteration (existing_definition).
 import re
 
 
+def _slugify(s):
+    """Name → Prozess-ID-Slug (Umlaute transliterieren, Rest raus)."""
+    s = (s.replace("ä", "ae").replace("ö", "oe").replace("ü", "ue")
+          .replace("Ä", "Ae").replace("Ö", "Oe").replace("Ü", "Ue")
+          .replace("ß", "ss"))
+    return re.sub(r"[^A-Za-z0-9]+", "_", s).strip("_") or "Prozess"
+
+
 def build_process_definition(compact: dict, existing: dict = None) -> dict:
     """Expand compact LLM output into full process_definition for generate_bpmn.py.
     
@@ -15,7 +23,7 @@ def build_process_definition(compact: dict, existing: dict = None) -> dict:
     and for flows that match by (from_label, to_label, condition)."""
 
     name = compact.get("name", "Prozess")
-    pid = "Process_1"
+    pid = (existing or {}).get("id") or "Process_1"
     roles = compact.get("roles", [])
     steps = compact.get("steps", [])
     flows = compact.get("flow", [])
@@ -28,7 +36,7 @@ def build_process_definition(compact: dict, existing: dict = None) -> dict:
     existing_label_to_id = {}  # label -> id (across all lanes)
     existing_lane_ids = {}    # role_name -> lane_id
     existing_flow_map = {}    # (from_label, to_label, condition) -> flow_id
-    max_counters = {"start": 0, "task": 0, "gateway": 0, "end": 0}
+    max_counters = {"start": 0, "task": 0, "gateway": 0, "end": 0, "callActivity": 0}
     max_flow_idx = 0
 
     if existing:
@@ -45,6 +53,8 @@ def build_process_definition(compact: dict, existing: dict = None) -> dict:
                 m = re.match(r'(\w+)_(\d+)', eid)
                 if m:
                     ctype = m.group(1).lower()
+                    if ctype == "callactivity":
+                        ctype = "callActivity"
                     cnum = int(m.group(2))
                     if ctype in max_counters and cnum > max_counters[ctype]:
                         max_counters[ctype] = cnum
@@ -78,6 +88,8 @@ def build_process_definition(compact: dict, existing: dict = None) -> dict:
     for step in steps:
         label = step.get("label", "").strip()
         stype = step.get("type", "task")
+        if stype in ("callactivity", "call_activity"):
+            stype = "callActivity"
         role = step.get("role", roles[0])
 
         if not label:
@@ -93,13 +105,18 @@ def build_process_definition(compact: dict, existing: dict = None) -> dict:
             eid = existing_elem_map[reuse_key]
         else:
             counters[stype] += 1
-            eid = f"{stype.capitalize()}_{counters[stype]}"
+            prefix = "CallActivity" if stype == "callActivity" else stype.capitalize()
+            eid = f"{prefix}_{counters[stype]}"
 
         id_map[label] = eid
 
         element = {"type": stype, "id": eid, "name": label}
         if stype == "gateway":
             element["gateway_type"] = step.get("gateway_type", "XOR")
+        if stype == "callActivity":
+            called_name = (step.get("calledProcess") or "").strip() or label
+            element["calledProcess"] = called_name
+            element["calledElement"] = f"Process_{_slugify(called_name)}"
 
         if role in lane_elements:
             lane_elements[role].append(element)

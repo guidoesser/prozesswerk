@@ -12,6 +12,7 @@ const state = {
   isRecording: false,
   recognition: null,
   isGenerating: false,
+  diagrams: [],
 };
 
 // ---- DOM Refs ----
@@ -44,6 +45,11 @@ const dom = {
   downloadBtn: $('#download-btn'),
   editorBtn: $('#editor-btn'),
   copyXmlBtn: $('#copy-xml-btn'),
+  libraryList: $('#library-list'),
+  libraryCount: $('#library-count'),
+  saveBtn: $('#save-btn'),
+  linksSection: $('#links-section'),
+  linksList: $('#links-list'),
 };
 
 // ---- API Helpers ----
@@ -64,6 +70,15 @@ async function apiPost(endpoint, body) {
 
 async function apiGet(endpoint) {
   const res = await fetch(`${API_BASE}${endpoint}`);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || `HTTP ${res.status}: ${res.statusText}`);
+  }
+  return res.json();
+}
+
+async function apiDelete(endpoint) {
+  const res = await fetch(`${API_BASE}${endpoint}`, { method: 'DELETE' });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.detail || `HTTP ${res.status}: ${res.statusText}`);
@@ -190,6 +205,9 @@ function showResults(data) {
   // Enable editor button
   dom.editorBtn.disabled = false;
 
+  // Render Verknüpfungen (Call Activities)
+  renderLinks();
+
   // Scroll to results
   dom.results.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
@@ -275,6 +293,138 @@ function copyXml() {
     document.execCommand('copy');
     document.body.removeChild(textarea);
   });
+}
+
+// ---- Diagramm-Bibliothek ----
+async function loadDiagrams() {
+  try {
+    state.diagrams = await apiGet('/diagrams');
+  } catch (err) {
+    state.diagrams = [];
+  }
+  renderDiagrams();
+}
+
+function renderDiagrams() {
+  dom.libraryCount.textContent = state.diagrams.length ? `${state.diagrams.length} gespeichert` : '';
+  if (!state.diagrams.length) {
+    dom.libraryList.innerHTML = '<em>Keine gespeicherten Diagramme.</em>';
+    return;
+  }
+  dom.libraryList.innerHTML = state.diagrams.map((d) => `
+    <div class="library-item">
+      <span class="library-name">${escapeHtml(d.name)}</span>
+      <span class="library-meta">${escapeHtml(d.process_id || '')}</span>
+      <span class="library-actions">
+        <button class="btn-sm" data-action="open" data-id="${d.id}">Öffnen</button>
+        <button class="btn-sm btn-danger" data-action="delete" data-id="${d.id}">Löschen</button>
+      </span>
+    </div>
+  `).join('');
+}
+
+async function saveDiagram() {
+  if (!state.currentBpmnXml) {
+    showError('Nichts zu speichern — erst ein Diagramm generieren oder öffnen.');
+    return;
+  }
+  const name = prompt('Name für das Diagramm:', (state.currentProcessDef && state.currentProcessDef.name) || 'Prozess');
+  if (!name || !name.trim()) return;
+  try {
+    const saved = await apiPost('/diagrams', {
+      name: name.trim(),
+      process_id: (state.currentProcessDef && state.currentProcessDef.id) || 'Process_1',
+      bpmn_xml: state.currentBpmnXml,
+      process_definition: state.currentProcessDef || {},
+    });
+    state.currentBpmnXml = saved.bpmn_xml;
+    state.currentProcessDef = saved.process_definition || state.currentProcessDef;
+    dom.xmlContent.textContent = saved.bpmn_xml;
+    dom.structureContent.textContent = JSON.stringify(state.currentProcessDef, null, 2);
+    await loadDiagrams();
+    renderLinks();
+  } catch (err) {
+    showError(err.message);
+  }
+}
+
+async function openDiagram(id) {
+  try {
+    const d = await apiGet(`/diagrams/${id}`);
+    state.currentBpmnXml = d.bpmn_xml || '';
+    state.currentProcessDef = d.process_definition || null;
+    state.currentNotes = null;
+    showResults({ bpmn_xml: state.currentBpmnXml, notes: null, process_definition: state.currentProcessDef });
+  } catch (err) {
+    showError(err.message);
+  }
+}
+
+async function deleteDiagram(id) {
+  const d = state.diagrams.find((x) => x.id === id);
+  if (!confirm(`Diagramm "${(d && d.name) || id}" löschen?`)) return;
+  try {
+    await apiDelete(`/diagrams/${id}`);
+    await loadDiagrams();
+  } catch (err) {
+    showError(err.message);
+  }
+}
+
+// ---- Verknüpfungen (Call Activities) ----
+function getCallActivities(pd) {
+  const out = [];
+  if (!pd || !Array.isArray(pd.lanes)) return out;
+  for (const lane of pd.lanes) {
+    for (const el of lane.elements || []) {
+      if (el.type === 'callActivity') out.push(el);
+    }
+  }
+  return out;
+}
+
+function renderLinks() {
+  const cas = getCallActivities(state.currentProcessDef);
+  if (!cas.length) {
+    dom.linksSection.style.display = 'none';
+    return;
+  }
+  dom.linksSection.style.display = 'block';
+  const selfPid = (state.currentProcessDef && state.currentProcessDef.id) || '';
+  const options = state.diagrams
+    .filter((d) => d.process_id !== selfPid)
+    .map((d) => `<option value="${escapeHtml(d.process_id)}">${escapeHtml(d.name)}</option>`)
+    .join('');
+  dom.linksList.innerHTML = cas.map((el) => `
+    <div class="link-item">
+      <label>${escapeHtml(el.name)}${el.calledProcess ? ` <span class="link-called">→ ${escapeHtml(el.calledProcess)}</span>` : ''}</label>
+      <select class="link-select" data-elem-id="${escapeHtml(el.id)}">
+        <option value="">— nicht verknüpft —</option>
+        ${options}
+      </select>
+    </div>
+  `).join('');
+  dom.linksList.querySelectorAll('.link-select').forEach((sel) => {
+    const el = cas.find((c) => c.id === sel.dataset.elemId);
+    if (el && el.calledElement && [...sel.options].some((o) => o.value === el.calledElement)) {
+      sel.value = el.calledElement;
+    }
+  });
+}
+
+async function applyLink(elemId, targetPid) {
+  const el = getCallActivities(state.currentProcessDef).find((c) => c.id === elemId);
+  if (!el) return;
+  if (targetPid) el.calledElement = targetPid;
+  else delete el.calledElement;
+  try {
+    const data = await apiPost('/render', { process_definition: state.currentProcessDef });
+    state.currentBpmnXml = data.bpmn_xml || '';
+    dom.xmlContent.textContent = state.currentBpmnXml;
+    dom.structureContent.textContent = JSON.stringify(state.currentProcessDef, null, 2);
+  } catch (err) {
+    showError(err.message);
+  }
 }
 
 // ---- Speech Recognition ----
@@ -423,6 +573,24 @@ function initEventListeners() {
       iterateBPMN();
     }
   });
+
+  // Diagramm speichern
+  dom.saveBtn.addEventListener('click', saveDiagram);
+
+  // Bibliothek: Öffnen/Löschen (Event-Delegation)
+  dom.libraryList.addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-action]');
+    if (!btn) return;
+    const id = Number(btn.dataset.id);
+    if (btn.dataset.action === 'open') openDiagram(id);
+    else if (btn.dataset.action === 'delete') deleteDiagram(id);
+  });
+
+  // Verknüpfungs-Select (Event-Delegation)
+  dom.linksList.addEventListener('change', (e) => {
+    if (!e.target.classList.contains('link-select')) return;
+    applyLink(e.target.dataset.elemId, e.target.value);
+  });
 }
 
 // ---- Init ----
@@ -430,6 +598,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initEventListeners();
   initSpeechRecognition();
   checkConfig();
+  loadDiagrams();
 
   // Auto-load text from Process Interview page
   const interviewText = localStorage.getItem('bpmn-interview-text');

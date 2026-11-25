@@ -760,3 +760,178 @@ details.guide-section summary:hover {
   white-space: nowrap;
   border-width: 0;
 }
+
+/* ---- Diagramm-Bibliothek ---- */
+.library-header {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.library-header h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.library-count {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.library-list {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.library-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.library-name {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.library-meta {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  flex: 1;
+}
+
+.library-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.btn-sm {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  font-size: 0.82rem;
+  font-family: var(--font);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.btn-sm:hover {
+  background: var(--bg-surface-hover);
+  color: var(--text-primary);
+  border-color: var(--accent);
+}
+
+.btn-sm:active {
+  transform: scale(0.97);
+}
+
+.btn-danger {
+  border-color: var(--error);
+  color: var(--error);
+}
+
+.btn-danger:hover {
+  background: var(--error-bg);
+  border-color: var(--error);
+  color: var(--error);
+}
+
+/* ---- Speichern-Button ---- */
+.btn-save {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  font-size: 0.88rem;
+  font-family: var(--font);
+  border-radius: var(--radius);
+  border: 1px solid var(--success);
+  background: transparent;
+  color: var(--success);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.btn-save:hover {
+  background: var(--success);
+  color: var(--text-inverse);
+}
+
+.btn-save:active {
+  transform: scale(0.97);
+}
+
+/* ---- Verknüpfungen (Call Activities) ---- */
+.links-section {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.links-section h3 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+}
+
+.links-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.link-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.link-item label {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  min-width: 200px;
+}
+
+.link-called {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.link-select {
+  flex: 1;
+  min-width: 180px;
+  padding: 8px 12px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: var(--font);
+  font-size: 0.85rem;
+  outline: none;
+  transition: border-color var(--transition);
+}
+
+.link-select:focus {
+  border-color: var(--border-focus);
+}
+
+.links-hint {
+  margin-top: 10px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}

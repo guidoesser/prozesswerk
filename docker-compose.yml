@@ -10,4 +10,9 @@ services:
       - LLM_API_KEY=${LLM_API_KEY}
       - LLM_BASE_URL=${LLM_BASE_URL}
       - LLM_MODEL=${LLM_MODEL}
+    volumes:
+      - prozesswerk-data:/app/data
     restart: unless-stopped
+
+volumes:
+  prozesswerk-data:

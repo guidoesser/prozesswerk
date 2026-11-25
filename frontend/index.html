@@ -69,6 +69,17 @@
       </div>
     </details>
 
+    <!-- ======== Diagramm-Bibliothek ======== -->
+    <section class="card library-section" id="library-section">
+      <div class="library-header">
+        <h2>📚 Diagramme</h2>
+        <span class="library-count" id="library-count"></span>
+      </div>
+      <div class="library-list" id="library-list">
+        <em>Keine gespeicherten Diagramme.</em>
+      </div>
+    </section>
+
     <!-- ======== Input Section ======== -->
     <section class="card input-section">
       <div class="input-row">
@@ -124,6 +135,12 @@
         <div class="download-section">
           <button class="btn-download" id="download-btn">⬇️ BPMN herunterladen</button>
           <button class="btn-editor" id="editor-btn">✏️ In Editor öffnen</button>
+          <button class="btn-save" id="save-btn">💾 Speichern</button>
+        </div>
+        <div class="links-section" id="links-section" style="display:none;">
+          <h3>🔗 Verknüpfungen zu anderen Diagrammen</h3>
+          <div class="links-list" id="links-list"></div>
+          <p class="links-hint">Wähle für jede Aufruf-Aktivität (Call Activity) das Diagramm, das sie aufruft. Die Ziel-Diagramme müssen vorher gespeichert sein.</p>
         </div>
       </div>
 

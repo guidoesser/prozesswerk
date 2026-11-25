@@ -19,12 +19,16 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 try:
     from . import generate_bpmn
     from . import llm_client
+    from . import storage
 except ImportError:
     import generate_bpmn
     import llm_client
+    import storage
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+storage.init_db()
 
 app = FastAPI(title="Prozesswerk")
 
@@ -48,6 +52,22 @@ if not os.path.isdir(FRONTEND_DIR):
 class GenerateRequest(BaseModel):
     text: str
     existing_definition: Optional[dict] = None
+
+
+class RenderRequest(BaseModel):
+    process_definition: dict
+
+
+class DiagramCreateRequest(BaseModel):
+    name: str
+    process_id: Optional[str] = None
+    bpmn_xml: str
+    process_definition: Optional[dict] = None
+    description: str = ""
+
+
+class DiagramRenameRequest(BaseModel):
+    name: str
 
 
 @app.get("/api/health")
@@ -110,6 +130,63 @@ async def generate(req: GenerateRequest):
     except Exception as e:
         logger.error(f"Unexpected error: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Interner Fehler: {str(e)}")
+
+
+# ═══════════════════════════════════════════════════════════════
+# Diagramm-Bibliothek (Mehr-Diagramm-Projekt)
+# ═══════════════════════════════════════════════════════════════
+
+@app.get("/api/diagrams")
+async def list_diagrams():
+    return storage.list_diagrams()
+
+
+@app.post("/api/diagrams")
+async def create_diagram(req: DiagramCreateRequest):
+    if not req.name.strip():
+        raise HTTPException(status_code=400, detail="Name darf nicht leer sein")
+    return storage.create_diagram(
+        req.name.strip(),
+        req.process_id or "",
+        req.bpmn_xml,
+        req.process_definition,
+        req.description,
+    )
+
+
+@app.get("/api/diagrams/{diagram_id}")
+async def get_diagram(diagram_id: int):
+    d = storage.get_diagram(diagram_id)
+    if not d:
+        raise HTTPException(status_code=404, detail="Diagramm nicht gefunden")
+    return d
+
+
+@app.put("/api/diagrams/{diagram_id}")
+async def rename_diagram(diagram_id: int, req: DiagramRenameRequest):
+    if not req.name.strip():
+        raise HTTPException(status_code=400, detail="Name darf nicht leer sein")
+    d = storage.rename_diagram(diagram_id, req.name.strip())
+    if not d:
+        raise HTTPException(status_code=404, detail="Diagramm nicht gefunden")
+    return d
+
+
+@app.delete("/api/diagrams/{diagram_id}")
+async def delete_diagram(diagram_id: int):
+    storage.delete_diagram(diagram_id)
+    return {"ok": True}
+
+
+@app.post("/api/render")
+async def render(req: RenderRequest):
+    """Re-rendert BPMN-XML aus einer Prozess-Definition (ohne LLM-Roundtrip)."""
+    try:
+        bpmn_xml = generate_bpmn.generate_xml(req.process_definition)
+        return {"bpmn_xml": bpmn_xml}
+    except Exception as e:
+        logger.error(f"Render failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 # ═══════════════════════════════════════════════════════════════

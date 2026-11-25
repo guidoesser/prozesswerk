@@ -48,6 +48,7 @@ ELEM_SIZES = {
     'serviceTask': (100, 80), 'servicetask': (100, 80),
     'start': (36, 36), 'end': (36, 36), 'gateway': (50, 50),
     'subProcess': (100, 80), 'subprocess': (100, 80),
+    'callActivity': (100, 80), 'callactivity': (100, 80),
 }
 
 LANE_PAD_TOP = 25
@@ -316,6 +317,11 @@ def make_bpmn_xml(process_def, all_elem_map, lane_bounds,
                     'id': eid, 'name': ename,
                 })
                 sub.set('triggeredByEvent', 'false')
+            elif etype in ('callActivity', 'callactivity'):
+                ET.SubElement(proc, tag('bpmn', 'callActivity'), {
+                    'id': eid, 'name': ename,
+                    'calledElement': elem.get('calledElement', ''),
+                })
             elif etype in ('serviceTask', 'servicetask'):
                 ET.SubElement(proc, tag('bpmn', 'serviceTask'), {'id': eid, 'name': ename})
             elif etype in ('userTask', 'usertask'):
@@ -407,7 +413,7 @@ def _hash_process_def(process_def):
     h = hashlib.sha256()
     for lane in sorted(process_def.get('lanes', []), key=lambda l: l.get('id', '')):
         for elem in sorted(lane.get('elements', []), key=lambda e: e.get('id', '')):
-            h.update(f"{lane['id']}:{elem['id']}:{elem['type']}:{elem.get('gateway_type','')}".encode())
+            h.update(f"{lane['id']}:{elem['id']}:{elem['type']}:{elem.get('gateway_type','')}:{elem.get('calledElement','')}".encode())
     for flow in sorted(process_def.get('flows', []), key=lambda f: f.get('id', '')):
         h.update(f"{flow['id']}:{flow['from']}:{flow['to']}:{flow.get('condition','')}".encode())
     return h.hexdigest()
